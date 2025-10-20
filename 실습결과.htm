@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<!-- saved from url=(0228)file:///Users/yoondongju/Desktop/2-2/%E1%84%83%E1%85%B5%E1%84%8C%E1%85%B5%E1%84%90%E1%85%A5%E1%86%AF%E1%84%86%E1%85%B5%E1%84%83%E1%85%B5%E1%84%8B%E1%85%A5%E1%84%83%E1%85%B5%E1%84%8C%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB/index.html -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title>FLEX 스크롤 페이지</title>
+  <style>
+    /* 폰트 설정 (필요 시 주석 해제) */
+    /* @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap'); */
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans KR", sans-serif;
+      color: white; /* 기본 텍스트 색상 */
+      background-color: #000;
+    }
+    
+    /* ====================================
+       공통 overlay 스타일 (각 스크롤 섹션)
+       ==================================== */
+    section.overlay { /* div 대신 section 태그 사용 */
+      position: relative;
+      min-height: 100vh; /* 화면 전체 높이 */
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end; /* 기본: 아래쪽 정렬 */
+      align-items: flex-start; /* 기본: 왼쪽 정렬 */
+      text-align: left;
+      padding: 80px;
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      box-sizing: border-box;
+    }
+    
+    /* 어두운 오버레이 배경 */
+    section.overlay::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.55);
+      z-index: 1;
+    }
+    
+    /* 콘텐츠는 오버레이 위에 위치 */
+    section.overlay > * {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* 기본 타이포그래피 */
+    h1 {
+      font-size: 120px;
+      margin-bottom: 20px;
+      line-height: 1.1;
+    }
+
+    h2 {
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+
+    p {
+      font-size: 20px;
+      line-height: 1.6;
+      max-width: 400px;
+    }
+
+    /* ====================================
+       페이지별 특수 정렬 및 스타일
+       ==================================== */
+    .overlay.centered {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .overlay.light-bg {
+      color: #111;
+    }
+
+    .overlay.light-bg::before {
+      background-color: rgba(255, 255, 255, 0.75);
+    }
+    
+    /* ====================================
+       페이지별 배경 이미지 및 스타일
+       ==================================== */
+    #page1 { background-image: url("cn1.png"); }
+    #page2 { 
+      /* 🚨 수정: 단일 배경 이미지를 사용하고, 커버로 설정 */
+      background-image: url("cn2.png"); /* 기존 cn2.png 사용 또는 원하는 단일 이미지 파일 경로 입력 */
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+      
+      /* 텍스트 배치를 위한 기본 Flex 속성 (Absolute Positioning의 기준점 역할) */
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    #page3 { background-image: url("cn3.webp"); background-position: top center; } 
+    #page4 { background-image: url("black.png"); }
+    #page5 { background-image: url("cn5.jpeg"); }
+    #page6 { background-image: url("cn6.png"); }
+    #page7 { background-image: url("cn7.jpeg"); }
+    #page8 { 
+      background-image: url("5493c69e-da88-4b76-a0a2-b6ce29d918b5.png"); 
+      background-size: contain;
+      background-color: #f5f5f5;
+    }
+    #page9 { 
+      background-image: url("9608a52c-2282-4c1a-9d58-24e6d7c99e4b.png"); 
+      background-size: contain; 
+      background-color: #e9f3ef;
+    }
+    #page10 { background-image: url("30e5b677-bf0a-4b4b-bbd5-f006498fc2b8.png"); }
+
+    /* 페이지별 세부 스타일 (이전 답변과 동일) */
+    #page2 .headline-box-p2 {
+      position: absolute;
+      top: 20%; /* 상단에서 20% 위치 */
+      left: 50%;
+      transform: translateX(-50%); /* X축 중앙 정렬 */
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+      z-index: 3; 
+    }
+    #page2 .headline-box-p2 h2 { 
+      font-size: 1.4rem; font-weight: 400; margin: 0.5rem 0; color: #fff;
+    }
+    #page2 .headline-box-p2 h1 { 
+      font-size: 6rem; font-weight: 800; color: #7ce5f4; margin: 0.5rem 0; 
+    }
+    
+    /* 2. 정보 박스 스타일 (하단 중앙) */
+    #page2 .info-box-p2-bottom {
+      position: absolute;
+      bottom: 15%; /* 하단에서 15% 위치 */
+      left: 50%;
+      transform: translateX(-50%); /* X축 중앙 정렬 */
+      background-color: rgba(255,255,255,0.1); 
+      padding: 1rem 1.5rem; 
+      border-radius: 12px; 
+      max-width: 600px; 
+      color: #dcefff; 
+      font-size: 1rem;
+      line-height: 1.6;
+      text-align: center;
+      z-index: 3;
+    }
+
+    /* 페이지 오버레이 색상은 기본 .overlay::before 스타일을 유지하며, 
+       배경 이미지 가독성을 위해 필요 시 #page2::before에서 조정 가능 */
+    #page2::before {
+        background-color: rgba(0,0,0,0.55); /* 기존 스타일 유지 */
+    }
+
+    #page3 .content-wrapper { width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; }
+    #page3 .hashtag p { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; max-width: none; }
+    #page3 h1 { font-size: 4rem; font-weight: 800; color: #9ccde8; margin-bottom: 40px; }
+    #page3 .image-frame { width: 420px; height: auto; border-radius: 25px; overflow: hidden; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    #page3 img { width: 100%; height: auto; display: block; }
+    #page3 p { font-size: 1rem; line-height: 1.7; text-align: center; max-width: none; }
+
+    /* 4페이지 (베블런 효과) - 중앙 정렬 */
+    #page4 h1 { font-size: 3rem; font-weight: 800; margin-bottom: 10px; }
+    #page4 h2 { font-size: 1.8rem; font-weight: 600; margin-bottom: 20px; line-height: 1.4; }
+    
+    /* 🚨 추가: 4페이지 이미지 프레임 중앙 정렬 및 스타일 */
+    #page4 .image-frame-p4 {
+      width: 420px;
+      height: auto;
+      border-radius: 25px;
+      overflow: hidden;
+      margin-bottom: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      margin: 0 auto 25px auto; /* 👈 중앙 정렬 */
+    }
+    #page4 .image-frame-p4 img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+
+    /* 🚨 수정: 하단 인용구 텍스트 중앙 정렬 */
+    #page4 .quote-box {
+      background-color: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px 30px;
+      max-width: 500px;
+      line-height: 1.7;
+      font-size: 1rem;
+      color: #e0e0e0;
+      margin: 0 auto; /* 👈 박스 자체 중앙 정렬 */
+      text-align: center; /* 👈 내부 텍스트 중앙 정렬 */
+    }
+    
+    #page5 h1, #page6 h1, #page7 h1 { font-size: 3rem; font-weight: 900; line-height: 1.3; margin-bottom: 40px; }
+    #page7 h1 { font-size: 5rem; font-weight: bold; margin-bottom: 30px; }
+    #page7 h1 span { color: #a0b0b8; }
+    /* 🚨 5페이지 전용 Flexbox 정렬 재정의 */
+    #page5 {
+      /* 수직 정렬: 요소들을 섹션의 상단과 하단에 배치 */
+      justify-content: space-between; 
+      
+      /* 수평 정렬: 요소들을 섹션의 왼쪽에 배치 (기본값인 flex-start와 동일) */
+      align-items: flex-start;
+      
+      /* 텍스트 정렬: 섹션 내부의 텍스트는 좌측 정렬 */
+      text-align: left;
+    }
+    
+    /* 5페이지 (결국엔 이게 다 쓰레기...) */
+    
+    /* 🚨 5페이지 제목 크기 키우기 및 상단 정렬 유지 */
+    #page5 h1 { 
+      font-size: 5rem;
+      font-weight: 900; 
+      line-height: 1.3; 
+      margin-top: 0; /* 상단 패딩에 붙이기 */
+      margin-bottom: 0; 
+    }
+    
+    /* 🚨 정보 박스 스타일 수정: 화면 하단에 완전히 붙이기 */
+    #page5 .stat-box { 
+      background-color: rgba(255,255,255,0.1); 
+      border-radius: 12px; 
+      padding: 25px 30px; 
+      font-size: 1.05rem; 
+      line-height: 1.7; 
+      color: #e5e5e5;
+      max-width: 500px; 
+      margin-bottom: 0; /* 👈 하단 마진 제거 */
+      margin-top: 0;
+    }
+    
+    /* content-wrapper의 Flex 설정으로 인해 stat-box가 하단에 붙게 됩니다. */
+    #page5 .content-wrapper {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; /* 👈 제목은 상단, 박스는 하단에 분리 배치 */
+        align-items: flex-start;
+    }
+    /* 🚨 6페이지 전용 Flexbox 설정 재수정 (좌측 정렬) */
+    #page6 {
+      justify-content: flex-start; 
+      align-items: flex-start; /* 👈 수평 좌측 정렬 */
+      text-align: left; /* 👈 텍스트 좌측 정렬 */
+    }
+    
+    /* 1. 제목 박스 스타일 (좌측 상단) */
+    #page6 .headline-box-p6 {
+      position: absolute;
+      top: 20%; /* 상단에서 20% 위치 */
+      left: 80px; /* 👈 좌측 패딩(80px)만큼 띄워 좌측에 붙입니다. */
+      transform: none; /* 👈 중앙 정렬 속성 제거 */
+      width: 100%;
+      max-width: 700px;
+      text-align: left; /* 👈 텍스트 좌측 정렬 */
+      z-index: 3;
+    }
+    #page6 .headline-box-p6 h1 { 
+      font-size: 5rem; 
+      font-weight: 900; 
+      line-height: 1.3; 
+      margin: 0;
+    }
+
+    /* 2. 정보 박스 스타일 (좌측 하단) */
+    #page6 .stat-box-p6-bottom {
+      position: absolute;
+      bottom: 80px; /* 👈 하단 패딩(80px)만큼 띄워 맨 밑에 붙입니다. */
+      left: 80px; /* 👈 좌측 패딩(80px)만큼 띄워 좌측에 붙입니다. */
+      transform: none; /* 👈 중앙 정렬 속성 제거 */
+      
+      /* 나머지 스타일 유지 */
+      background-color: rgba(255,255,255,0.1); 
+      border-radius: 12px; 
+      padding: 25px 30px; 
+      font-size: 1.05rem; 
+      line-height: 1.7; 
+      color: #e5e5e5;
+      max-width: 500px; 
+      text-align: left; /* 👈 텍스트 좌측 정렬 */
+      margin: 0;
+      z-index: 3;
+    }
+    /* 7페이지 배경 이미지 설정 (첫 번째 이미지처럼 전체 배경으로 사용) */
+    #page7 { 
+      /* 🚨 배경 이미지를 cn7.jpeg 대신 미세플라스틱 이미지로 대체 */
+      background-image: url("cn7.jpeg"); /* 또는 원하는 미세플라스틱 이미지 파일 경로 */
+      background-size: cover;
+      background-position: center center;
+    }
+    
+    /* 어두운 오버레이를 조금 더 투명하게 설정하여 배경 이미지를 살림 (선택 사항) */
+    #page7::before {
+      background-color: rgba(0,0,0,0.4); 
+    }
+
+    /* 🚨 7페이지 중앙 정렬 유지 */
+    #page7 {
+      justify-content: center; /* 세로 중앙 */
+      align-items: center; /* 가로 중앙 */
+      text-align: center;
+    }
+
+    #page7 h1 { 
+      font-size: 5rem; 
+      font-weight: bold; 
+      margin-bottom: 20px; /* 설명 텍스트와의 간격 조정 */
+      line-height: 1.1;
+      z-index: 2; /* 오버레이 위로 */
+    }
+    #page7 h1 span { 
+      color: #a0b0b8; 
+    }
+    
+    /* 🚨 7페이지 설명 텍스트 중앙 정렬 및 스타일 */
+    #page7 .description-text-p7 { 
+      font-size: 1.5rem; /* 제목과 어울리도록 크기를 키움 */
+      max-width: 600px; 
+      line-height: 1.5; 
+      color: white; /* 텍스트 색상 통일 */
+      margin: 20px auto 0 auto; /* 상단 간격 및 중앙 정렬 */
+      padding: 0;
+      z-index: 2; /* 오버레이 위로 */
+    }
+
+    /* content-wrapper의 Flex 설정 제거 또는 단순화 */
+    #page7 .content-wrapper {
+        height: auto;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    /* 🚨 8페이지 (중고거래) - 밝은 배경, 중앙 정렬 */
+    #page8 { 
+      background-image: none; /* 배경 이미지는 사용하지 않음 */
+      background-color: #e6f1f4; /* 🚨 밝은 하늘색 계열 배경색 */
+      color: #111; /* 텍스트를 검은색으로 변경 */
+    }
+
+    /* 오버레이 효과를 제거하거나 투명하게 (밝은 배경에 맞게) */
+    #page8::before {
+      background-color: rgba(255, 255, 255, 0); /* 🚨 완전히 투명한 오버레이 */
+    }
+
+    #page8 .content-wrapper {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* 모든 요소를 세로 중앙으로 모음 */
+        align-items: center;
+        text-align: center;
+    }
+
+    #page8 h3 { 
+      font-size: 1.2rem; 
+      font-weight: 500; 
+      color: #7c8a99; 
+      margin-bottom: 10px; /* 제목과의 간격 조정 */
+    }
+
+    #page8 h1 { 
+      font-size: 4rem; /* 제목 크기 조정 */
+      font-weight: 900; 
+      line-height: 1.3; 
+      margin-bottom: 40px; /* 이미지와의 간격 조정 */
+      color: #111; /* 텍스트 색상 통일 */
+    }
+
+    /* 🚨 8페이지 이미지 컨테이너 중앙 정렬 */
+    #page8 .image-container-p8 {
+      width: 100%;
+      max-width: 600px; /* 이미지 최대 너비 */
+      border-radius: 20px;
+      overflow: hidden;
+      margin: 0 auto 40px auto; /* 👈 상하 여백 및 중앙 정렬 */
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1); /* 그림자 약하게 */
+    }
+    #page8 .image-container-p8 img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* 🚨 8페이지 하단 설명 텍스트 중앙 정렬 및 스타일 */
+    #page8 .description-text-p8 { 
+      font-size: 1.2rem; /* 크기 조정 */
+      max-width: 600px; /* 텍스트 박스 최대 너비 */
+      line-height: 1.5; 
+      color: #111; /* 텍스트 색상 통일 */
+      margin: 0 auto; /* 👈 상단 간격 및 중앙 정렬 */
+      padding: 0 20px; /* 좌우 패딩으로 텍스트가 너무 붙는 것을 방지 */
+      box-sizing: border-box;
+    }
+
+    /* 🚨 9페이지 배경 이미지 설정 (어두운 옷장 이미지) */
+    #page9 { 
+      background-image: url("cn9.png"); /* 👈 제공된 옷장 이미지 파일 경로 */
+      background-size: cover;
+      background-position: center top; /* 옷장이 잘 보이도록 상단 중앙 정렬 */
+      color: white; /* 텍스트를 흰색으로 변경 */
+      
+      /* Absolute Positioning의 기준점 역할 및 좌측 정렬 기준 설정 */
+      justify-content: flex-start; 
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    /* 🚨 오버레이를 어둡게 유지하여 텍스트 가독성 확보 */
+    #page9::before {
+      background-color: rgba(0,0,0,0.4); /* 어둡게 */
+    }
+    
+    /* 1. 제목 박스 스타일 (좌측 상단) */
+    #page9 .headline-box-p9 {
+      position: absolute; 
+      top: 10%; /* 상단에서 10% 위치 */
+      left: 80px; /* 좌측 패딩(80px)만큼 띄워 좌측에 붙입니다. */
+      transform: none; 
+      width: 100%;
+      max-width: 500px;
+      text-align: left; 
+      z-index: 3;
+    }
+    #page9 .headline-box-p9 h3 { 
+      font-size: 1.5rem; /* 크기 조정 */
+      font-weight: 600; 
+      color: #9ccde8; /* 🚨 밝은 색상으로 변경 */
+      margin-bottom: 10px; 
+    }
+    #page9 .headline-box-p9 h1 { 
+      font-size: 5rem; /* 크기 키움 */
+      font-weight: 900; 
+      line-height: 1.25; 
+      margin: 0;
+      color: white; 
+    }
+    
+    /* 2. 정보 박스 스타일 (하단 중앙) */
+    #page9 .info-box-p9-bottom {
+      position: absolute; 
+      bottom: 80px; /* 하단 패딩(80px)만큼 띄워 맨 밑에 붙입니다. */
+      left: 50%; /* 중앙 정렬 시작점 */
+      transform: translateX(-50%); /* 👈 X축 중앙 정렬 */
+      
+      /* 배경은 투명하게 */
+      background-color: transparent; 
+      padding: 0; /* 패딩 제거 */
+      max-width: 500px; 
+      text-align: center; /* 👈 내부 텍스트 중앙 정렬 */
+      margin: 0;
+      z-index: 3;
+    }
+    
+    #page9 .info-box-p9-bottom .tag {
+      display: inline-block; 
+      background: rgba(255,255,255,0.2); /* 🚨 밝은 배경의 투명 박스 */
+      color: white; 
+      padding: 6px 12px; 
+      border-radius: 999px; 
+      margin: 0 6px 8px;
+      font-size: 0.9rem;
+    }
+
+    #page9 .info-box-p9-bottom p {
+        font-size: 1.1rem; /* p 태그 스타일 오버라이드 */
+        line-height: 1.6;
+        max-width: none;
+        margin-top: 15px;
+    }
+
+    /* 🚨 10페이지 (마지막) - 중앙 정렬 */
+    #page10 {
+      /* .overlay.centered 클래스의 기본 정렬을 따릅니다. */
+      justify-content: center; 
+      align-items: center; 
+      text-align: center;
+    }
+    
+    /* 🚨 배경 이미지 가독성을 위해 오버레이 약간 강화 */
+    #page10::before {
+        background-color: rgba(0,0,0,0.4);
+    }
+    
+    #page10 h1 { 
+      font-size: 3.5rem; /* 🚨 제목 크기 조정 */
+      font-weight: 900; 
+      line-height: 1.4; /* 줄 간격 조정 */
+      margin: 0;
+    }
+
+    /* 🚨 NO! 스타일 (크게 강조) */
+    #page10 .highlight-no {
+      display: inline-block;
+      font-size: 5rem;
+      font-weight: 900;
+      color: #7ce5f4; /* 👈 하늘색으로 변경 */
+      margin: 10px 0;
+    }
+
+    /* 🚨 YES! 스타일 (크게 강조) */
+    #page10 .highlight-yes {
+      display: inline-block;
+      font-size: 5rem;
+      font-weight: 900;
+      color: #7ce5f4; /* 👈 하늘색으로 변경 */
+      margin: 10px 0;
+    }
+
+    /* content-wrapper의 Flex 설정 단순화 */
+    #page10 .content-wrapper {
+        height: auto;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    #page10 { 
+    /* 🚨 여기에 이미지 경로를 넣어주세요. */
+    background-image: url("cn10.jpeg"); 
+}
+    
+    .content-wrapper { max-width: 100%; padding: 0; width: 100%; }
+  </style>
+</head>
+<body>
+  
+  <section class="overlay" id="page1">
+    <h1>
+      <span class="top">FLEX가</span><br>
+      <span class="bottom">지구를 망쳐요</span>
+    </h1>
+  </section>
+
+  <section class="overlay" id="page2">
+    <div class="headline-box-p2">
+      <h2>MZ세대의 새로운 소비 트렌드,</h2>
+      <h1>플렉스 (flex)</h1>
+      <h2>자신의 재력이나 귀중품을 과시하는 소비 문화.</h2>
+    </div>
+
+    <div class="info-box-p2-bottom">
+      SNS를 통해 <span style="color:#7ce5f4;">명품 소비나 호화로운 경험</span>을 인증하는 방식으로 확산되었다.<br>
+      한국인 명품 지출액은 <span style="color:#7ce5f4;">약 168억 달러(약 21조원)</span>으로,<br>
+      국민들의 경제 수준에 비해 과소비 성향이 높게 나타났다.
+    </div>
+  </section>
+
+  <section class="overlay centered" id="page3">
+    <div class="content-wrapper">
+      <div class="hashtag">
+        <p>#명품소비 #오마카세 등등...</p>
+      </div>
+
+      <h1>
+        과시하는 방식으로 확산
+      </h1>
+
+      <div class="image-frame">
+        <img src="file:///Users/yoondongju/Desktop/2-2/%E1%84%83%E1%85%B5%E1%84%8C%E1%85%B5%E1%84%90%E1%85%A5%E1%86%AF%E1%84%86%E1%85%B5%E1%84%83%E1%85%B5%E1%84%8B%E1%85%A5%E1%84%83%E1%85%B5%E1%84%8C%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB/cn3.webp" alt="Dior gift boxes">
+      </div>
+
+      <p>
+        → 정말 필요한 물건을 사는 것보다는&nbsp;
+        SNS에 자랑하기 우선인<br>
+        <span style="color:#8cbfde;">나를 위한 소비</span>가 아닌
+        <span style="color:#8cbfde;">남을 위한 소비</span>가 점점 심해지고 있다!
+      </p>
+    </div>
+  </section>
+
+  <section class="overlay centered" id="page4">
+    <div class="content-wrapper">
+      <h1>
+        과시소비,
+      </h1>
+      <h2>
+        남보다 나음을 증명하려는 심리<br>⇓<br>베블런 효과와 연결!
+      </h2>
+
+      <div class="image-frame-p4"> 
+        <img src="file:///Users/yoondongju/Desktop/2-2/%E1%84%83%E1%85%B5%E1%84%8C%E1%85%B5%E1%84%90%E1%85%A5%E1%86%AF%E1%84%86%E1%85%B5%E1%84%83%E1%85%B5%E1%84%8B%E1%85%A5%E1%84%83%E1%85%B5%E1%84%8C%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB/bbb.jpg" alt="베블런 효과 이미지">
+      </div>
+
+      <div class="quote-box">
+        “상품 가격이 오를수록 수요는 증가한다.<br>
+        왜냐하면 그들은 상품 자체가 아닌<br>
+        <span style="color:#9cd3f4;">가치를 소비하기 때문</span>이다.”<br><br>
+        — 베블런 (1857–1929)
+      </div>
+    </div>
+  </section>
+
+  <section class="overlay" id="page5"> 
+    <div class="content-wrapper">
+      <h1>
+        결국엔<br>이게 다 쓰레기...
+      </h1>
+
+      <div class="stat-box">
+        우리가 소비하는 옷 대부분은 쓰레기장이나 소각장으로 직행.<br>
+        매년 생산되는 의류 중 재활용되는 비율은 <span style="color:#aee7f9;">1% 미만</span>이다.
+      </div>
+    </div>
+  </section>
+
+  <section class="overlay" id="page6">
+    <div class="headline-box-p6">
+      <h1>
+        점점 무거워지는<br>지구
+      </h1>
+    </div>
+
+    <div class="stat-box-p6-bottom">
+      우리가 소비한 만큼,<br>
+      버려지는 양도 함께 늘고 있다.<br>
+      지난 20여 년간 한국의 폐기물 발생량은<br>
+      <span style="color:#7ce5f4; font-size:1.5rem; font-weight:700;">167%</span>나 증가했다.
+    </div>
+  </section>
+
+  <section class="overlay centered" id="page7"> 
+    <div class="content-wrapper">
+      <h1>남 일 <span>아니고</span>,<br>우리 일인 걸..</h1>
+      
+      <p class="description-text-p7">버려진 물건들에서는 환경은 물론,<br>인체에 해로운 미세플라스틱이 나옴.</p> 
+</div>
+  </section>
+
+  <section class="overlay light-bg" id="page8"> 
+    <div class="content-wrapper">
+      <h3>그럼 어떻게 해야돼?</h3>
+
+      <h1>
+        중고도 괜찮은 거 많다.
+      </h1>
+      
+      <div class="image-container-p8">
+        <img src="file:///Users/yoondongju/Desktop/2-2/%E1%84%83%E1%85%B5%E1%84%8C%E1%85%B5%E1%84%90%E1%85%A5%E1%86%AF%E1%84%86%E1%85%B5%E1%84%83%E1%85%B5%E1%84%8B%E1%85%A5%E1%84%83%E1%85%B5%E1%84%8C%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB/cn8.jpeg" alt="당근마켓 이미지"> </div>
+
+      <p class="description-text-p8">새로운 것을 사는 것이 아닌, 아껴쓰고 나눠쓰고 다시쓰고!</p>
+    </div>
+  </section>
+
+  <section class="overlay" id="page9"> 
+    <div class="headline-box-p9">
+      <h3>#20만원으로한달살기</h3>
+      <h1>무지출 챌린지</h1>
+    </div>
+  </section>
+
+  <section class="overlay centered" id="page10">
+    <div class="content-wrapper">
+      <h1>
+        남을 위한 소비?<br>
+        <span class="highlight-no">NO!</span><br>
+        나를 위한 소비?<br>
+        <span class="highlight-yes">YES!</span>
+      </h1>
+    </div>
+  </section>
+
+  <footer>©디지털미디어디자인 24101029 윤동주</footer>
+
+
+</body></html>
